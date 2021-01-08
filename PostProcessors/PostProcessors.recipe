@@ -6,7 +6,7 @@
     <string>Recipe stub for any Processors in this directory.
     </string>
     <key>Identifier</key>
-    <string>org.mvschools.gitlab.jcapen.mvsdautopkg.postprocessors</string>
+    <string>com.github.jamescapen.jamescapen-recipes.postprocessors</string>
     <key>Input</key>
     <dict/>
     <key>MinimumVersion</key>
