@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
 import json
 
 from autopkglib import Processor, ProcessorError, URLGetter
@@ -24,6 +23,7 @@ from autopkglib import Processor, ProcessorError, URLGetter
 __all__ = ["SlackerCurl"]
 
 class SlackerCurl(URLGetter):
+
     description = (
         "Posts to Slack via webhook based on output of a MunkiImporter. "
         "Slack alternative to the post processor provided by Andy Semak (@asemak) "
@@ -42,15 +42,15 @@ class SlackerCurl(URLGetter):
     input_variables = {
         "munki_info": {
             "required": False,
-            "description": "Munki info dictionary to use to display info.",
+            "description": ("Munki info dictionary to use to display info."),
         },
         "munki_repo_changed": {
             "required": False,
-            "description": "Whether or not item was imported.",
+            "description": ("Whether or not item was imported."),
         },
         "webhook_url": {
             "required": False,
-            "description": "Slack webhook.",
+            "description": ("Slack webhook."),
         }
     }
     output_variables = {
