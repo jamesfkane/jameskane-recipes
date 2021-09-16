@@ -1,12 +1,12 @@
 Description: |
-  Downloads the latest version of Zoom and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.github.jamescapen.recipes.jamf.Zoom
+  Downloads the latest version of Google Earth and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.github.jamescapen.recipes.jamf.google-earth
 MinimumVersion: "2.3"
-ParentRecipe: com.github.homebysix.pkg.Zoom
+ParentRecipe: com.github.autopkg.pkg.google-earth
 
 Input:
-  NAME: Zoom
-  CATEGORY: Video Conferencing
+  NAME: Google Earth
+  CATEGORY: Productivity
   GROUP_NAME: "%NAME%-update-smart"
   GROUP_TEMPLATE: SmartGroup-update-smart-regex.xml
   TESTING_GROUP_NAME: Testing
@@ -14,7 +14,7 @@ Input:
   POLICY_TEMPLATE: Policy-install-latest.xml
   POLICY_NAME: "Install Latest %NAME%"
   SELF_SERVICE_DISPLAY_NAME: "Install Latest %NAME%"
-  SELF_SERVICE_DESCRIPTION: The Zoom app provides cloud-hosted video conferencing, plus online meetings and group messaging.
+  SELF_SERVICE_DESCRIPTION: Take a virtual journey to any location in the world. Explore 3D buildings, imagery, and terrain. Find cities, places and local businesses.
   SELF_SERVICE_ICON: "%NAME%.png"
   INSTALL_BUTTON_TEXT: "Install %version%"
   REINSTALL_BUTTON_TEXT: "Install %version%"
@@ -30,6 +30,8 @@ Process:
   - Processor: StopProcessingIf
     Arguments:
       predicate: "%UPDATE_PREDICATE%"
+
+  - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
