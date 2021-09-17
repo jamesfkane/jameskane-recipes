@@ -13,7 +13,7 @@ Input:
   POLICY_TEMPLATE: Policy-install-latest.xml
   POLICY_NAME: "Install Latest %NAME%"
   SELF_SERVICE_DISPLAY_NAME: "Install Latest %NAME%"
-  SELF_SERVICE_DESCRIPTION: Slack is a platform for team communication: everything in one place, instantly searchable, available wherever you go.
+  SELF_SERVICE_DESCRIPTION: "Slack is a platform for team communication: everything in one place, instantly searchable, available wherever you go."
   SELF_SERVICE_ICON: "%NAME%.png"
   INSTALL_BUTTON_TEXT: "Install %version%"
   REINSTALL_BUTTON_TEXT: "Install %version%"
