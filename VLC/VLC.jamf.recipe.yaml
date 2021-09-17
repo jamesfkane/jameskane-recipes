@@ -4,7 +4,7 @@ MinimumVersion: "2.3"
 ParentRecipe: com.github.apizz.pkg.VLCUniversal
 
 Input:
-  NAME: Postman
+  NAME: VLC
   CATEGORY: Productivity
   GROUP_NAME: "%NAME%-update-smart"
   GROUP_TEMPLATE: SmartGroup-update-smart.xml
