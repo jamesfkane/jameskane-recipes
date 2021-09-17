@@ -1,2 +1,2 @@
 # jamescapen-recipes
-AutoPkg Recipes mainly of the .jamf variety.
+AutoPkg recipes mainly of the .jamf variety.
