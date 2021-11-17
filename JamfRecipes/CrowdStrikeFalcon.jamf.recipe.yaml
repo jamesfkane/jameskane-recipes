@@ -10,7 +10,7 @@ Input:
   GROUP_TEMPLATE: SmartGroup-update-smart-regex.xml
   TESTING_GROUP_NAME: Testing
   POLICY_CATEGORY: Testing
-  POLICY_TEMPLATE: Policy-install-latest-script.xml
+  POLICY_TEMPLATE: Policy-install-latest-script-parameter4.xml
   POLICY_NAME: "Install Latest %NAME%"
   SCRIPT_NAME: "Postinstall-CrowdStrikeFalcon.sh"
   SCRIPT_PRIORITY: After
