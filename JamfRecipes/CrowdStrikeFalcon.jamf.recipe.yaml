@@ -14,7 +14,8 @@ Input:
   POLICY_NAME: "Install Latest %NAME%"
   SCRIPT_NAME: "Postinstall-CrowdStrikeFalcon.sh"
   SCRIPT_PRIORITY: After
-  SCRIPT_PARAMETER4: CrowdStrike Falcon Client ID
+  PARAMETER4_TITLE: CrowdStrike Falcon Client ID
+  PARAMETER4_VALUE: ENTER_CROWDSTRIKE_CLIENT_ID_HERE
   SELF_SERVICE_DISPLAY_NAME: "Install Latest %NAME%"
   SELF_SERVICE_DESCRIPTION: "A complete cloud-native framework to protect endpoints with ease: Stop breaches and improve performance with the power of the cloud, artificial intelligence (AI) and an intelligent, lightweight agent."
   SELF_SERVICE_ICON: "%NAME%.png"
@@ -40,6 +41,7 @@ Process:
       script_category: "%CATEGORY%"
       script_path: "%SCRIPT_NAME%"
       script_priority: "%SCRIPT_PRIORITY%"
+      script_parameter4: "%PARAMETER4_TITLE%"
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
