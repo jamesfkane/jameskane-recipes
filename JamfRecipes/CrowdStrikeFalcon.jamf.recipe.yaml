@@ -5,7 +5,7 @@ ParentRecipe: com.github.mlbz521.download.CrowdStrikeFalcon
 
 Input:
   NAME: CrowdStrike Falcon
-  CATEGORY: Productivity
+  CATEGORY: Security
   GROUP_NAME: "%NAME%-update-smart"
   GROUP_TEMPLATE: SmartGroup-update-smart-regex.xml
   TESTING_GROUP_NAME: Testing
