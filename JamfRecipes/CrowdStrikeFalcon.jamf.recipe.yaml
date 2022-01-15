@@ -12,6 +12,7 @@ Input:
   POLICY_CATEGORY: Testing
   POLICY_TEMPLATE: Policy-install-latest-script-parameter4.xml
   POLICY_NAME: "Install Latest %NAME%"
+  POLICY_RUN_COMMAND: "echo 'Installation of %NAME% complete'"
   SCRIPT_NAME: "Postinstall-CrowdStrikeFalcon.sh"
   SCRIPT_PRIORITY: After
   PARAMETER4_TITLE: CrowdStrike Falcon Client ID
