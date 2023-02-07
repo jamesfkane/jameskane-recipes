@@ -1,0 +1,81 @@
+Description: Downloads the latest version of Tableau Desktop and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.tableau-desktop
+MinimumVersion: "2.3"
+ParentRecipe: com.github.gmarnin.pkg.tableau-desktop
+
+Input:
+  NAME: Tableau Desktop
+  APP_BUNDLE_ID: "com.tableausoftware.tableaudesktop"
+  CATEGORY: Applications
+  TRIGGER_NAME: "autoupdate-%NAME%"
+  DEFER_TRIGGER: "defer-%NAME%"
+  SELF_SERVICE_DESCRIPTION: Tableau Desktop is data visualization software that lets you see and understand data in minutes.
+  SELF_SERVICE_ICON: "%NAME%.png"
+  UPDATE_PREDICATE: "pkg_uploaded != True"
+  STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
+
+Process:
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfCategoryUploader
+    Arguments:
+      category_name: "%CATEGORY%"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPackageUploader
+    Arguments:
+      pkg_category: "%CATEGORY%"
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%UPDATE_PREDICATE%"
+
+  - Processor: io.github.hjuutilainen.VirusTotalAnalyzer/VirusTotalAnalyzer
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%STOP_PREDICATE%"
+
+  - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
+
+  - Processor: com.github.jazzace.processors/TextSearcher
+    Arguments:
+      re_pattern: '\d+\.\d+'
+      result_output_var_name: jss_version
+      text_in: "%version%"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-notinstalled.xml"
+      computergroup_name: "App Not Installed: %NAME%"
+      JSS_INVENTORY_NAME: "%NAME% %jss_version%.app"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-installed.xml"
+      computergroup_name: "App Installed: %NAME%"
+      JSS_INVENTORY_NAME: "%NAME% %jss_version%.app"    
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-selfservice-install.xml"
+      policy_name: "%NAME% - Self Service Install"
+      frequency: "Ongoing"
+      checkin_bool: "false"
+      POLICY_CATEGORY: "%CATEGORY%"
+      group_name: "App Not Installed: %NAME%"
+      self_service_bool: "true"
+      self_service_action: "Install"
+      icon: "%SELF_SERVICE_ICON%"
+      replace_policy: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-selfservice-reinstall.xml"
+      policy_name: "%NAME% - Self Service Re-install"
+      frequency: "Ongoing"
+      checkin_bool: "false"
+      POLICY_CATEGORY: "%CATEGORY%"
+      group_name: "App Installed: %NAME%"
+      exclude_group_name: "Auto Update: %NAME%"
+      self_service_bool: "true"
+      self_service_action: "Re-Install"
+      icon: "%SELF_SERVICE_ICON%"
+      replace_policy: "True"

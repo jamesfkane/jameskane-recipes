@@ -1,24 +1,19 @@
 Description: Downloads the latest version of Slack and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.github.jamescapen.jamf.Slack
+Identifier: com.jameskane.autopkg-recipes.jamf.slack
 MinimumVersion: "2.3"
 ParentRecipe: com.github.killahquam.pkg.slack
 
 Input:
   NAME: Slack
-  CATEGORY: Productivity
-  GROUP_NAME: "%NAME%-update-smart"
-  GROUP_TEMPLATE: SmartGroup-update-smart-regex.xml
-  TESTING_GROUP_NAME: Testing
-  POLICY_CATEGORY: Testing
-  POLICY_TEMPLATE: Policy-install-latest.xml
-  POLICY_NAME: "Install Latest %NAME%"
-  POLICY_RUN_COMMAND: "echo 'Installation of %NAME% complete'"
-  SELF_SERVICE_DISPLAY_NAME: "Install Latest %NAME%"
-  SELF_SERVICE_DESCRIPTION: "Slack is a platform for team communication: everything in one place, instantly searchable, available wherever you go."
+  APP_BUNDLE_ID: "com.tinyspeck.slackmacgap"
+  CATEGORY: Applications
+  TRIGGER_NAME: "autoupdate-%NAME%"
+  ONBOARDING_TRIGGER: "onboarding-%NAME%"
+  DEFER_TRIGGER: "defer-%NAME%"
+  SELF_SERVICE_DESCRIPTION: Slack is a platform for team communication. Everything in one place, instantly searchable, available wherever you go.
   SELF_SERVICE_ICON: "%NAME%.png"
-  INSTALL_BUTTON_TEXT: "Install %version%"
-  REINSTALL_BUTTON_TEXT: "Install %version%"
-  UPDATE_PREDICATE: "pkg_uploaded == False"
+  UPDATE_PREDICATE: "pkg_uploaded != True"
+  STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
 
 Process:
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfCategoryUploader
@@ -26,20 +21,118 @@ Process:
       category_name: "%CATEGORY%"
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPackageUploader
+    Arguments:
+      pkg_category: "%CATEGORY%"
 
   - Processor: StopProcessingIf
     Arguments:
       predicate: "%UPDATE_PREDICATE%"
 
+  - Processor: io.github.hjuutilainen.VirusTotalAnalyzer/VirusTotalAnalyzer
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%STOP_PREDICATE%"
+
   - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
-      computergroup_template: "%GROUP_TEMPLATE%"
-      computergroup_name: "%GROUP_NAME%"
+      computergroup_template: "SmartGroupTemplate-autopatch.xml"
+      computergroup_name: "Auto Update: %NAME%"
+      replace_group: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-notinstalled.xml"
+      computergroup_name: "App Not Installed: %NAME%"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-installed.xml"
+      computergroup_name: "App Installed: %NAME%"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
+    Arguments:
+      script_category: "AutoPkg"
+      script_name: "auto-update-appQuitter.py"
+      script_path: "auto-update-appQuitter.py"
+      script_priority: "BEFORE"
+      replace_script: "True"        
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
+    Arguments:
+      script_category: "AutoPkg"
+      script_name: "auto-update-silentUpdate.py"
+      script_path: "auto-update-silentUpdate.py"
+      script_priority: "BEFORE"
+      replace_script: "True"       
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-autopatch.xml"
+      policy_name: "%NAME% - Auto Update"
+      frequency: "Ongoing"
+      checkin_bool: "false"
+      trigger_name: "%TRIGGER_NAME%"
+      POLICY_CATEGORY: "Auto-Update"
+      group_name: "Auto Update: %NAME%"
+      self_service_bool: "false"
+      self_service_action: "Install"
+      replace_policy: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-selfservice-install.xml"
+      policy_name: "%NAME% - Self Service Install"
+      frequency: "Ongoing"
+      checkin_bool: "false"
+      POLICY_CATEGORY: "%CATEGORY%"
+      group_name: "App Not Installed: %NAME%"
+      self_service_bool: "true"
+      self_service_action: "Install"
+      icon: "%SELF_SERVICE_ICON%"
+      replace_policy: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-selfservice-update.xml"
+      policy_name: "%NAME% - Self Service Update"
+      script_trigger_name: "%TRIGGER_NAME%"
+      frequency: "Ongoing"
+      checkin_bool: "false"
+      POLICY_CATEGORY: "%CATEGORY%"
+      group_name: "Auto Update: %NAME%"
+      self_service_bool: "true"
+      self_service_action: "Update to"
+      icon: "%SELF_SERVICE_ICON%"
+      replace_policy: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-selfservice-reinstall.xml"
+      policy_name: "%NAME% - Self Service Re-install"
+      frequency: "Ongoing"
+      checkin_bool: "false"
+      POLICY_CATEGORY: "%CATEGORY%"
+      group_name: "App Installed: %NAME%"
+      exclude_group_name: "Auto Update: %NAME%"
+      self_service_bool: "true"
+      self_service_action: "Re-Install"
+      icon: "%SELF_SERVICE_ICON%"
+      replace_policy: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-silent.xml"
+      policy_name: "%NAME% - Silent Update"
+      group_name: "Auto Update: %NAME%"
+      script_trigger_name: "%TRIGGER_NAME%"
+      replace_policy: "True"
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
-      policy_template: "%POLICY_TEMPLATE%"
-      policy_name: "%POLICY_NAME%"
-      icon: "%SELF_SERVICE_ICON%"
+      policy_template: "PolicyTemplate-onboarding.xml"
+      policy_name: "%NAME% - Onboarding"
+      POLICY_CATEGORY: "Auto-Install: Onboarding"
+      replace_policy: "True"

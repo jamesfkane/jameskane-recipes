@@ -1,0 +1,76 @@
+Description: Downloads the latest version of Code42 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.code42
+MinimumVersion: "2.3"
+ParentRecipe: com.github.apizz.pkg.Code42-arm64
+
+Input:
+  NAME: Code42
+  APP_BUNDLE_ID: "com.backup42.desktop"
+  group_arch: arm64
+  CATEGORY: Applications
+  ONBOARDING_TRIGGER_AMERICAS: "onboarding-code42-americas"
+  ONBOARDING_TRIGGER_APJ_EMEA: "onboarding-code42-apj-emea"
+  SELF_SERVICE_DESCRIPTION: Code42 Insider Risk software solutions provide the right balance of transparency, technology and training to detect and appropriately respond to data risk.
+  UPDATE_PREDICATE: "pkg_uploaded != True"
+  STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
+
+Process:
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfCategoryUploader
+    Arguments:
+      category_name: "%CATEGORY%"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPackageUploader
+    Arguments:
+      pkg_category: "%CATEGORY%"
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%UPDATE_PREDICATE%"
+
+  - Processor: io.github.hjuutilainen.VirusTotalAnalyzer/VirusTotalAnalyzer
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%STOP_PREDICATE%"  
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-code42-notinstalled-arch-americas.xml"
+      computergroup_name: "App Not Installed: %NAME%-Americas-%group_arch%"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-code42-notinstalled-arch-apj-emea.xml"
+      computergroup_name: "App Not Installed: %NAME%-APJ-EMEA-%group_arch%"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
+    Arguments:
+      script_category: "AutoPkg"
+      script_name: "code42-americas-deployment.sh"
+      script_path: "code42-americas-deployment.sh"
+      script_priority: "BEFORE"
+      replace_script: "True" 
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
+    Arguments:
+      script_category: "AutoPkg"
+      script_name: "code42-apj-emea-deployment.sh"
+      script_path: "code42-apj-emea-deployment.sh"
+      script_priority: "BEFORE"
+      replace_script: "True"      
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-code42-americas.xml"
+      policy_name: "%NAME% - Americas - %group_arch% - Auto Install"
+      POLICY_CATEGORY: "Applications"
+      group_name: "App Not Installed: %NAME%-Americas-%group_arch%"
+      replace_policy: "True"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-code42-apj-emea.xml"
+      policy_name: "%NAME% - APJ-EMEA - %group_arch% - Auto Install"
+      POLICY_CATEGORY: "Applications"
+      group_name: "App Not Installed: %NAME%-APJ-EMEA-%group_arch%"
+      replace_policy: "True"

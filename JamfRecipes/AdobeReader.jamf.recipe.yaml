@@ -1,17 +1,16 @@
-Description: Downloads the latest version of iTerm2 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.jameskane.autopkg-recipes.jamf.iterm2
+Description: Downloads the latest version of Adobe Reader and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.adobereader
 MinimumVersion: "2.3"
-ParentRecipe: io.github.hjuutilainen.pkg.iTerm2
+ParentRecipe: com.github.autopkg.pkg.AdobeReader
 
 Input:
-  NAME: "iTerm2"
-  JSS_INVENTORY_NAME: "iTerm.app"
-  APP_BUNDLE_ID: "com.googlecode.iterm2"
+  NAME: "Adobe Acrobat Reader"
+  APP_BUNDLE_ID: "com.adobe.Reader"
   CATEGORY: Applications
   TRIGGER_NAME: "autoupdate-%NAME%"
   ONBOARDING_TRIGGER: "onboarding-%NAME%"
   DEFER_TRIGGER: "defer-%NAME%"
-  SELF_SERVICE_DESCRIPTION: iTerm2 is a terminal emulator for macOS that does amazing things.
+  SELF_SERVICE_DESCRIPTION: Adobe Reader is the global standard for reliably viewing, printing, and commenting on PDF documents. It's the only PDF file viewer that can open and interact with all types of PDF content, including forms and multimedia.
   SELF_SERVICE_ICON: "%NAME%.png"
   UPDATE_PREDICATE: "pkg_uploaded != True"
   STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
@@ -79,19 +78,6 @@ Process:
       group_name: "Auto Update: %NAME%"
       self_service_bool: "false"
       self_service_action: "Install"
-      replace_policy: "True"
-      
-  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
-    Arguments:
-      policy_template: "PolicyTemplate-selfservice-install.xml"
-      policy_name: "%NAME% - Self Service Install"
-      frequency: "Ongoing"
-      checkin_bool: "false"
-      POLICY_CATEGORY: "%CATEGORY%"
-      group_name: "App Not Installed: %NAME%"
-      self_service_bool: "true"
-      self_service_action: "Install"
-      icon: "%SELF_SERVICE_ICON%"
       replace_policy: "True"
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader

@@ -1,17 +1,21 @@
-Description: Downloads the latest version of iTerm2 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.jameskane.autopkg-recipes.jamf.iterm2
+Description: Downloads the latest version of Perimeter 81 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.perimeter81
 MinimumVersion: "2.3"
-ParentRecipe: io.github.hjuutilainen.pkg.iTerm2
+ParentRecipe: com.jameskane.autopkg-recipes.pkg.Perimeter81
 
 Input:
-  NAME: "iTerm2"
-  JSS_INVENTORY_NAME: "iTerm.app"
-  APP_BUNDLE_ID: "com.googlecode.iterm2"
+  NAME: "Perimeter 81"
+  JSS_INVENTORY_NAME: "Perimeter 81.app"
+  APP_BUNDLE_ID: "com.safervpn.osx.smb"
   CATEGORY: Applications
+  EXTENSION_ATTRIBUTE_NAME: "%NAME% Version"
+  EXTENSION_ATTRIBUTE_SCRIPT: VersionStringOverride-Concatenate-EA.sh
+  VERSION_STRING_TYPE: CFBundleShortVersionString
+  VERSION_STRING_TYPE2: CFBundleVersion
   TRIGGER_NAME: "autoupdate-%NAME%"
   ONBOARDING_TRIGGER: "onboarding-%NAME%"
   DEFER_TRIGGER: "defer-%NAME%"
-  SELF_SERVICE_DESCRIPTION: iTerm2 is a terminal emulator for macOS that does amazing things.
+  SELF_SERVICE_DESCRIPTION: Perimeter 81 is a Zero Trust Network as a Service that helps you to secure your team’s network, including valuable local and cloud resources.
   SELF_SERVICE_ICON: "%NAME%.png"
   UPDATE_PREDICATE: "pkg_uploaded != True"
   STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
@@ -37,11 +41,19 @@ Process:
 
   - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
 
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfExtensionAttributeUploader
+    Arguments:
+      ea_script_path: "%EXTENSION_ATTRIBUTE_SCRIPT%"
+      ea_name: "%EXTENSION_ATTRIBUTE_NAME%"
+      replace_ea: "True"
+
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
-      computergroup_template: "SmartGroupTemplate-autopatch.xml"
+      computergroup_template: "SmartGroupTemplate-autopatch-EA.xml"
       computergroup_name: "Auto Update: %NAME%"
       replace_group: "True"
+      EXTENSION_ATTRIBUTE_SEARCH_TYPE: "does not match regex"
+      EXTENSION_ATTRIBUTE_VALUE: "%version_regex%"      
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
@@ -58,7 +70,8 @@ Process:
       script_category: "AutoPkg"
       script_name: "auto-update-appQuitter.py"
       script_path: "auto-update-appQuitter.py"
-      replace_script: "True"        
+      script_priority: "BEFORE"
+      replace_script: "True"   
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
     Arguments:
@@ -121,7 +134,25 @@ Process:
       self_service_action: "Re-Install"
       icon: "%SELF_SERVICE_ICON%"
       replace_policy: "True"
-
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-prompt.xml"
+      policy_name: "%NAME% - Monthly Prompt"
+      script_trigger_name: "%TRIGGER_NAME%"
+      POLICY_CATEGORY: "Auto-Update: Monthly Prompt"
+      group_name: "Auto Update: %NAME%"
+      replace_policy: "True"
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-defer.xml"
+      policy_name: "%NAME% - Deferred Update"
+      script_trigger_name: "%TRIGGER_NAME%"
+      POLICY_CATEGORY: "Auto-Update: Deferral"
+      group_name: "Auto Update: %NAME%"
+      replace_policy: "True"
+      
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
       policy_template: "PolicyTemplate-silent.xml"

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "Deleting previous Camtasia installs (if present)..."
+/usr/bin/find "/Applications" -name "Camtasia*.app" -type d -maxdepth 1 -exec rm -rfv {} \;
+
+exit 0

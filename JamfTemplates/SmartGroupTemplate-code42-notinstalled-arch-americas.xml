@@ -1,0 +1,50 @@
+<computer_group>
+    <name>%computergroup_name%</name>
+    <is_smart>true</is_smart>
+    <criteria>
+        <criterion>
+            <name>Application Title</name>
+            <priority>0</priority>
+            <and_or>and</and_or>
+            <search_type>is not</search_type>
+            <value>%JSS_INVENTORY_NAME%</value>
+        </criterion>
+        <criterion>
+            <name>Architecture Type</name>
+            <priority>1</priority>
+            <and_or>and</and_or>
+            <search_type>is</search_type>
+            <value>%group_arch%</value>
+        </criterion>
+        <criterion>
+            <name>Building</name>
+            <priority>2</priority>
+            <and_or>and</and_or>
+            <search_type>is</search_type>
+            <value>Chicago</value>
+            <opening_paren>true</opening_paren>
+        </criterion>
+        <criterion>
+            <name>Building</name>
+            <priority>3</priority>
+            <and_or>or</and_or>
+            <search_type>is</search_type>
+            <value>New York City</value>
+        </criterion>
+        <criterion>
+            <name>Building</name>
+            <priority>4</priority>
+            <and_or>or</and_or>
+            <search_type>is</search_type>
+            <value>San Francisco</value>
+        </criterion>
+        <criterion>
+            <name>Building</name>
+            <priority>5</priority>
+            <and_or>or</and_or>
+            <search_type>is</search_type>
+            <value>Vancouver</value>
+            <closing_paren>true</closing_paren>
+        </criterion>                
+    </criteria>
+</computer_group>

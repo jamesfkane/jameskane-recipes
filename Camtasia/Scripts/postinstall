@@ -1,0 +1,10 @@
+#!/bin/sh
+
+regkey=""
+
+if [ -n "$regkey" ]; then
+  [[ ! -d "/Users/Shared/TechSmith/Camtasia" ]] && /bin/mkdir -p "/Users/Shared/TechSmith/Camtasia"
+  /bin/echo "$regkey" > "/Users/Shared/TechSmith/Camtasia/LicenseKey"
+  /bin/chmod -R 777 "/Users/Shared/TechSmith"
+  /bin/chmod a+x "/Users/Shared/TechSmith/Camtasia/LicenseKey"
+fi

@@ -1,17 +1,16 @@
-Description: Downloads the latest version of iTerm2 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.jameskane.autopkg-recipes.jamf.iterm2
+Description: Downloads the latest version of Dropbox and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.dropbox
 MinimumVersion: "2.3"
-ParentRecipe: io.github.hjuutilainen.pkg.iTerm2
+ParentRecipe: com.github.autopkg.pkg.dropbox
 
 Input:
-  NAME: "iTerm2"
-  JSS_INVENTORY_NAME: "iTerm.app"
-  APP_BUNDLE_ID: "com.googlecode.iterm2"
+  NAME: Dropbox
+  APP_BUNDLE_ID: "com.getdropbox.dropbox"
   CATEGORY: Applications
   TRIGGER_NAME: "autoupdate-%NAME%"
   ONBOARDING_TRIGGER: "onboarding-%NAME%"
   DEFER_TRIGGER: "defer-%NAME%"
-  SELF_SERVICE_DESCRIPTION: iTerm2 is a terminal emulator for macOS that does amazing things.
+  SELF_SERVICE_DESCRIPTION: Dropbox is a free service that lets you bring all your photos, docs, and videos anywhere. This means that any file you save to your Dropbox will automatically save to all your computers, phones and even the Dropbox website.
   SELF_SERVICE_ICON: "%NAME%.png"
   UPDATE_PREDICATE: "pkg_uploaded != True"
   STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
@@ -58,6 +57,7 @@ Process:
       script_category: "AutoPkg"
       script_name: "auto-update-appQuitter.py"
       script_path: "auto-update-appQuitter.py"
+      script_priority: "BEFORE"
       replace_script: "True"        
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
@@ -66,7 +66,7 @@ Process:
       script_name: "auto-update-silentUpdate.py"
       script_path: "auto-update-silentUpdate.py"
       script_priority: "BEFORE"
-      replace_script: "True" 
+      replace_script: "True"       
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
@@ -121,7 +121,7 @@ Process:
       self_service_action: "Re-Install"
       icon: "%SELF_SERVICE_ICON%"
       replace_policy: "True"
-
+      
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
       policy_template: "PolicyTemplate-silent.xml"

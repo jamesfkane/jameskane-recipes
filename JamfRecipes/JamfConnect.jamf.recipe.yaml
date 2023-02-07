@@ -1,0 +1,75 @@
+Description: Downloads the latest version of Jamf Connect and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.jamfconnect
+MinimumVersion: "2.3"
+ParentRecipe: com.github.dataJAR-recipes.pkg.Jamf Connect 2
+
+Input:
+  NAME: Jamf Connect
+  APP_BUNDLE_ID: "com.jamf.connect"
+  CATEGORY: Applications
+  TRIGGER_NAME: "autoupdate-%NAME%"
+  ONBOARDING_TRIGGER: "onboarding-%NAME%"
+  DEFER_TRIGGER: "defer-%NAME%"
+  SELF_SERVICE_DESCRIPTION: Streamline Mac authentication and identity management.
+  SELF_SERVICE_ICON: "%NAME%.png"
+  UPDATE_PREDICATE: "pkg_uploaded != True"
+  STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
+
+Process:
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfCategoryUploader
+    Arguments:
+      category_name: "%CATEGORY%"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPackageUploader
+    Arguments:
+      pkg_category: "%CATEGORY%"
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%UPDATE_PREDICATE%"
+
+  - Processor: io.github.hjuutilainen.VirusTotalAnalyzer/VirusTotalAnalyzer
+
+  - Processor: StopProcessingIf
+    Arguments:
+      predicate: "%STOP_PREDICATE%"
+
+  - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
+    Arguments:
+      computergroup_template: "SmartGroupTemplate-autopatch.xml"
+      computergroup_name: "Auto Update: %NAME%"
+      replace_group: "True"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
+    Arguments:
+      script_category: "AutoPkg"
+      script_name: "application-quit.sh"
+      script_path: "application-quit.sh"
+      script_priority: "BEFORE"
+      replace_script: "True"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
+    Arguments:
+      script_category: "AutoPkg"
+      script_name: "auto-update-silentUpdate.py"
+      script_path: "auto-update-silentUpdate.py"
+      script_priority: "BEFORE"
+      replace_script: "True"       
+      
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-force-update.xml"
+      policy_name: "%NAME% - Forced Update"
+      script_trigger_name: "%TRIGGER_NAME%"
+      POLICY_CATEGORY: "Auto-Update: Forced Update"
+      group_name: "Auto Update: %NAME%"
+      replace_policy: "True"
+
+  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
+    Arguments:
+      policy_template: "PolicyTemplate-onboarding.xml"
+      policy_name: "%NAME% - Onboarding"
+      POLICY_CATEGORY: "Auto-Install: Onboarding"
+      replace_policy: "True"

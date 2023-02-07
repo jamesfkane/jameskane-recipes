@@ -1,17 +1,16 @@
-Description: Downloads the latest version of iTerm2 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.jameskane.autopkg-recipes.jamf.iterm2
+Description: Downloads the latest version of Asana and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.asana
 MinimumVersion: "2.3"
-ParentRecipe: io.github.hjuutilainen.pkg.iTerm2
+ParentRecipe: com.github.mikestechshop.pkg.asana
 
 Input:
-  NAME: "iTerm2"
-  JSS_INVENTORY_NAME: "iTerm.app"
-  APP_BUNDLE_ID: "com.googlecode.iterm2"
+  NAME: Asana
+  APP_BUNDLE_ID: "com.electron.asana"
   CATEGORY: Applications
   TRIGGER_NAME: "autoupdate-%NAME%"
   ONBOARDING_TRIGGER: "onboarding-%NAME%"
   DEFER_TRIGGER: "defer-%NAME%"
-  SELF_SERVICE_DESCRIPTION: iTerm2 is a terminal emulator for macOS that does amazing things.
+  SELF_SERVICE_DESCRIPTION: Asana’s native desktop app removes distractions so you can focus on what’s important.
   SELF_SERVICE_ICON: "%NAME%.png"
   UPDATE_PREDICATE: "pkg_uploaded != True"
   STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
@@ -58,16 +57,9 @@ Process:
       script_category: "AutoPkg"
       script_name: "auto-update-appQuitter.py"
       script_path: "auto-update-appQuitter.py"
-      replace_script: "True"        
-
-  - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
-    Arguments:
-      script_category: "AutoPkg"
-      script_name: "auto-update-silentUpdate.py"
-      script_path: "auto-update-silentUpdate.py"
       script_priority: "BEFORE"
-      replace_script: "True" 
-      
+      replace_script: "True"            
+
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
       policy_template: "PolicyTemplate-autopatch.xml"
@@ -83,7 +75,7 @@ Process:
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
-      policy_template: "PolicyTemplate-selfservice-install.xml"
+      policy_template: "PolicyTemplate-selfservice-install-featured.xml"
       policy_name: "%NAME% - Self Service Install"
       frequency: "Ongoing"
       checkin_bool: "false"
@@ -96,7 +88,7 @@ Process:
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
-      policy_template: "PolicyTemplate-selfservice-update.xml"
+      policy_template: "PolicyTemplate-selfservice-update-featured.xml"
       policy_name: "%NAME% - Self Service Update"
       script_trigger_name: "%TRIGGER_NAME%"
       frequency: "Ongoing"
@@ -120,14 +112,6 @@ Process:
       self_service_bool: "true"
       self_service_action: "Re-Install"
       icon: "%SELF_SERVICE_ICON%"
-      replace_policy: "True"
-
-  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
-    Arguments:
-      policy_template: "PolicyTemplate-silent.xml"
-      policy_name: "%NAME% - Silent Update"
-      group_name: "Auto Update: %NAME%"
-      script_trigger_name: "%TRIGGER_NAME%"
       replace_policy: "True"
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader

@@ -1,20 +1,24 @@
-Description: Downloads the latest version of iTerm2 and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
-Identifier: com.jameskane.autopkg-recipes.jamf.iterm2
+Description: Downloads the latest version of Figma (Intel) and makes a pkg. Then, uploads the package to the Jamf Pro Server and creates a Self Service Policy and Smart Group.
+Identifier: com.jameskane.autopkg-recipes.jamf.figma-intel
 MinimumVersion: "2.3"
-ParentRecipe: io.github.hjuutilainen.pkg.iTerm2
+ParentRecipe: com.github.dataJAR-recipes.pkg.Figma
 
 Input:
-  NAME: "iTerm2"
-  JSS_INVENTORY_NAME: "iTerm.app"
-  APP_BUNDLE_ID: "com.googlecode.iterm2"
+  NAME: Figma-Intel
+  JSS_INVENTORY_NAME: Figma.app
+  APP_BUNDLE_ID: "com.figma.Desktop"
   CATEGORY: Applications
   TRIGGER_NAME: "autoupdate-%NAME%"
-  ONBOARDING_TRIGGER: "onboarding-%NAME%"
+  ONBOARDING_TRIGGER: "onboarding-Figma"
   DEFER_TRIGGER: "defer-%NAME%"
-  SELF_SERVICE_DESCRIPTION: iTerm2 is a terminal emulator for macOS that does amazing things.
+  group_arch: x86_64
+  URL: https://desktop.figma.com/mac/Figma.zip
+  SELF_SERVICE_DESCRIPTION: Design, prototype, and gather feedback all in one place with Figma.
   SELF_SERVICE_ICON: "%NAME%.png"
   UPDATE_PREDICATE: "pkg_uploaded != True"
   STOP_PREDICATE: "NOT virus_total_analyzer_summary_result.data.ratio BEGINSWITH '0'"
+  
+
 
 Process:
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfCategoryUploader
@@ -35,22 +39,22 @@ Process:
     Arguments:
       predicate: "%STOP_PREDICATE%"
 
-  - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator
+  - Processor: com.github.grahampugh.recipes.commonprocessors/VersionRegexGenerator      
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
-      computergroup_template: "SmartGroupTemplate-autopatch.xml"
+      computergroup_template: "SmartGroupTemplate-autopatch-arch.xml"
       computergroup_name: "Auto Update: %NAME%"
       replace_group: "True"
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
-      computergroup_template: "SmartGroupTemplate-notinstalled.xml"
+      computergroup_template: "SmartGroupTemplate-notinstalled-arch.xml"
       computergroup_name: "App Not Installed: %NAME%"
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfComputerGroupUploader
     Arguments:
-      computergroup_template: "SmartGroupTemplate-installed.xml"
+      computergroup_template: "SmartGroupTemplate-installed-arch.xml"
       computergroup_name: "App Installed: %NAME%"
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
@@ -58,6 +62,7 @@ Process:
       script_category: "AutoPkg"
       script_name: "auto-update-appQuitter.py"
       script_path: "auto-update-appQuitter.py"
+      script_priority: "BEFORE"
       replace_script: "True"        
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfScriptUploader
@@ -66,7 +71,7 @@ Process:
       script_name: "auto-update-silentUpdate.py"
       script_path: "auto-update-silentUpdate.py"
       script_priority: "BEFORE"
-      replace_script: "True" 
+      replace_script: "True"       
       
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
     Arguments:
@@ -120,14 +125,6 @@ Process:
       self_service_bool: "true"
       self_service_action: "Re-Install"
       icon: "%SELF_SERVICE_ICON%"
-      replace_policy: "True"
-
-  - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
-    Arguments:
-      policy_template: "PolicyTemplate-silent.xml"
-      policy_name: "%NAME% - Silent Update"
-      group_name: "Auto Update: %NAME%"
-      script_trigger_name: "%TRIGGER_NAME%"
       replace_policy: "True"
 
   - Processor: com.github.grahampugh.jamf-upload.processors/JamfPolicyUploader
